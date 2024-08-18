@@ -1,0 +1,45 @@
+# Node modules
+node_modules/
+
+# Environment variables
+.env
+
+# Logs
+logs/
+*.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+
+# Temporary files
+/tmp
+*.tmp
+
+# IDE configurations
+.vscode/
+.idea/
+
+# Operating system files
+.DS_Store
+Thumbs.db
+
+# Coverage directory for testing
+coverage/
+
+# Swagger files (if dynamically generated)
+swagger.json
+swagger.yaml
+
+# Winston log files
+*.log
+error.log
+combined.log
+
+# Ignore the build directory (if applicable)
+build/
+dist/
+
+# Ignore data files (optional)
+*.csv
+*.sqlite
+*.sqlite3
