@@ -1,38 +1,75 @@
 // controllers/authController.js
 
+const jwt = require('jsonwebtoken');
 const bcrypt = require('bcryptjs');
-const { generateToken } = require('../config/jwt');
-const db = require('../config/db');
+const { validationResult } = require('express-validator');
+const connection = require('../config/db'); // Usa tu archivo db.js
 
-// Registro de usuario
+// Función para registrar un nuevo usuario
 exports.register = async (req, res) => {
-    const { username, password } = req.body;
+    const errors = validationResult(req);
+    if (!errors.isEmpty()) {
+        return res.status(400).json({ errors: errors.array() });
+    }
+
+    const { username, password, nombre, apellido, email } = req.body;
 
     try {
+        // Verifica si el usuario ya existe
+        const [results] = await connection.query('SELECT * FROM users WHERE username = ?', [username]);
+        if (results.length > 0) {
+            return res.status(400).json({ error: 'El usuario ya existe.' });
+        }
+
+        // Cifra la contraseña
         const hashedPassword = await bcrypt.hash(password, 10);
-        const [result] = await db.execute('INSERT INTO USUARIOS (username, password) VALUES (?, ?)', [username, hashedPassword]);
-        const token = generateToken(result.insertId);
-        res.status(201).json({ token });
+
+        // Crea el nuevo usuario
+        await connection.query(
+            'INSERT INTO users (username, password, nombre, apellido, email) VALUES (?, ?, ?, ?, ?)',
+            [username, hashedPassword, nombre, apellido, email]
+        );
+
+        res.status(201).json({ message: 'Usuario registrado exitosamente.' });
     } catch (error) {
-        res.status(500).json({ error: 'Error en el registro de usuario.' });
+        console.error('Error en el registro:', error);
+        res.status(500).json({ error: 'Error en el servidor.' });
     }
 };
 
-// Inicio de sesión
+// Función para iniciar sesión y obtener un token JWT
 exports.login = async (req, res) => {
+    const errors = validationResult(req);
+    if (!errors.isEmpty()) {
+        return res.status(400).json({ errors: errors.array() });
+    }
+
     const { username, password } = req.body;
 
     try {
-        const [rows] = await db.execute('SELECT * FROM USUARIOS WHERE username = ?', [username]);
-        const user = rows[0];
-
-        if (!user || !(await bcrypt.compare(password, user.password))) {
-            return res.status(400).json({ error: 'Credenciales incorrectas.' });
+        // Busca al usuario por su nombre de usuario
+        const [results] = await connection.query('SELECT * FROM users WHERE username = ?', [username]);
+        if (results.length === 0) {
+            return res.status(400).json({ error: 'Credenciales inválidas.' });
         }
 
-        const token = generateToken(user.ID_USUARIO);
-        res.status(200).json({ token });
+        const user = results[0];
+        console.log('Contraseña almacenada:', user.password); // Verifica el valor de user.password
+
+        // Compara la contraseña proporcionada con la almacenada en la base de datos
+        const isMatch = await bcrypt.compare(password, user.password);
+        if (!isMatch) {
+            return res.status(400).json({ error: 'Credenciales inválidas.' });
+        }
+
+        // Genera el token JWT
+        const payload = { id: user.id_usuario, username: user.username };
+        const token = jwt.sign(payload, process.env.JWT_SECRET, { expiresIn: '1h' });
+
+        // Devuelve el token al cliente
+        res.json({ token });
     } catch (error) {
-        res.status(500).json({ error: 'Error en el inicio de sesión.' });
+        console.error('Error en el inicio de sesión:', error);
+        res.status(500).json({ error: 'Error en el servidor.' });
     }
 };

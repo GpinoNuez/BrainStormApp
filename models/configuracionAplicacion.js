@@ -5,11 +5,11 @@ const db = require('../config/db');
 const ConfiguracionAplicacion = {};
 
 ConfiguracionAplicacion.getAll = () => {
-    return db.query('SELECT * FROM CONFIGURACION_APLICACION');
+    return db.query('SELECT * FROM brainstorm_bd.configuracion_aplicacion');
 };
 
 ConfiguracionAplicacion.update = (id, clave, valor, descripcion) => {
-    return db.execute('UPDATE CONFIGURACION_APLICACION SET CLAVE = ?, VALOR = ?, DESCRIPCION = ? WHERE ID_CONFIGURACION = ?', 
+    return db.execute('update brainstorm_bd.configuracion_aplicacion set clave = ?, valor = ?, descripcion = ? where id_configuracion = ?', 
                       [clave, valor, descripcion, id]);
 };
 

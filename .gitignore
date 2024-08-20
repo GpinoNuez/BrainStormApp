@@ -38,8 +38,41 @@ combined.log
 # Ignore the build directory (if applicable)
 build/
 dist/
+/dist
+/build
+
 
 # Ignore data files (optional)
 *.csv
 *.sqlite
 *.sqlite3
+
+# ignorar json google
+config/google-credentials.json
+
+# Editor/IDE Files
+.vscode/
+.idea/
+*.suo
+*.ntvs
+*.njsproj
+*.sln
+
+# Compiled Python Files
+__pycache__/
+*.py[cod]
+
+# FFmpeg Binaries
+/ffmpeg/
+
+# Uploads Directory (donde Multer guarda temporalmente los archivos)
+uploads/
+
+# Archivos de configuración específicos
+config/google-credentials.json
+config/db.js  # Si contiene credenciales sensibles
+
+# Proyectos React/Vue/Angular
+/public/assets
+/public/static
+/public/build
